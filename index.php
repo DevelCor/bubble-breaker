@@ -11,6 +11,7 @@ for ( $i = 0; $i < $width ; $i++ ) {
 }
 
 $_SESSION['matriz'] = $matriz;
+$_SESSION["puntos"] = 0;
 
 
 ?>

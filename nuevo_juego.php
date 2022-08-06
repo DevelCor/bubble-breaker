@@ -2,15 +2,29 @@
 //echo "<td><button type='submit' name='bubble'/> <img src='assets/".$mat[$i][$j].".png'> </button></td>";
 
 session_start();
-$_SESSION["puntos"] = 0;
+if(!isset($_SESSION["puntos"])) {
+    $_SESSION["puntos"] = 0;
+}
 $_SESSION["contador"] = 0;
-$_SESSION["pelotas"] = 1;
+$_SESSION["pelotasArri"] = 1;
+$_SESSION["pelotasAba"] = 1;
+$_SESSION["pelotasDere"] = 1;
+$_SESSION["pelotasIz"] = 1;
+$_SESSION['actual'] = false;
+
+
+$_SESSION["fin_iz"] = false;
+$_SESSION["fin_aba"] = false;
+$_SESSION["fin_arri"] = false;
+$_SESSION["fin_dere"] = false;
+
+
 if(!isset($_SESSION["matriz"])){
     header("location: index.php");
 }else {
     $matriz = $_SESSION["matriz"];
 
-    if (isset($_POST) && count($_POST) >= 1) {
+    if (isset($_POST['bubble'])) {
         $position_i = explode("-",$_POST['bubble'])[1];
         $position_j = explode("-",$_POST['bubble'])[2];
 
@@ -21,10 +35,12 @@ if(!isset($_SESSION["matriz"])){
             if ( isset($matriz[$pos_i-1][$pos_j]) && $matriz[$pos_i-1][$pos_j] == $color) {
                 $matriz[$pos_i-1][$pos_j] = 0;
                 $_SESSION['matriz'] = $matriz;
-                $_SESSION["pelotas"]++;
+                $_SESSION["pelotasArri"]++;
+                $_SESSION['actual'] = true;
                 comprobarArriba($pos_i-1, $pos_j, $matriz, $color);
             } else {
-                $_SESSION["puntos"] += ($_SESSION["pelotas"] * ($_SESSION["pelotas"]-1));
+                $_SESSION["puntos"] += ((int)$_SESSION["pelotasArri"] * ((int)$_SESSION["pelotasArri"]-1));
+                $_SESSION["pelotasArri"] = 0 ;
             }
         }
 
@@ -32,9 +48,12 @@ if(!isset($_SESSION["matriz"])){
             if ( isset($matriz[$pos_i+1][$pos_j]) && $matriz[$pos_i+1][$pos_j] == $color) {
                 $matriz[$pos_i+1][$pos_j] = 0;
                 $_SESSION['matriz'] = $matriz;
+                $_SESSION["pelotasAba"]++;
+                $_SESSION['actual'] = true;
                 comprobarAbajo($pos_i+1, $pos_j, $matriz, $color);
             } else {
-                $_SESSION["puntos"] += ($_SESSION["pelotas"] * ($_SESSION["pelotas"]-1));
+                $_SESSION["puntos"] += ((int)$_SESSION["pelotasAba"] * ((int)$_SESSION["pelotasAba"]-1));
+                $_SESSION["pelotasAba"] = 0 ;
             }
         }
 
@@ -42,9 +61,12 @@ if(!isset($_SESSION["matriz"])){
             if ( isset($matriz[$pos_i][$pos_j+1]) && $matriz[$pos_i][$pos_j+1] == $color) {
                 $matriz[$pos_i][$pos_j+1] = 0;
                 $_SESSION['matriz'] = $matriz;
+                $_SESSION["pelotasDere"]++;
+                $_SESSION['actual'] = true;
                 comprobarDerecha($pos_i, $pos_j+1, $matriz, $color);
             } else {
-                $_SESSION["puntos"] += ($_SESSION["pelotas"] * ($_SESSION["pelotas"]-1));
+                $_SESSION["puntos"] += ((int)$_SESSION["pelotasDere"] * ((int)$_SESSION["pelotasDere"]-1));
+                $_SESSION["pelotasDere"] = 0 ;
             }
         }
 
@@ -52,37 +74,82 @@ if(!isset($_SESSION["matriz"])){
             if ( isset($matriz[$pos_i][$pos_j-1]) && $matriz[$pos_i][$pos_j-1] == $color) {
                 $matriz[$pos_i][$pos_j-1] = 0;
                 $_SESSION['matriz'] = $matriz;
+                $_SESSION["pelotasIz"]++;
+                $_SESSION['actual'] = true;
                 comprobarIzquierda($pos_i, $pos_j-1, $matriz, $color);
             } else {
-                $_SESSION["puntos"] += ($_SESSION["pelotas"] * ($_SESSION["pelotas"]-1));
+                $_SESSION["puntos"] += ((int)$_SESSION["pelotasIz"] * ((int)$_SESSION["pelotasIz"]-1));
+                $_SESSION["pelotasIz"] = 0 ;
             }
         }
 
+
+        function finComprobarArriba($pos_i, $pos_j, $matriz, $color) {
+            if ( isset($matriz[$pos_i-1][$pos_j]) && $matriz[$pos_i-1][$pos_j] == $color) {
+                finComprobarArriba($pos_i-1, $pos_j, $matriz, $color);
+            } else {
+                $_SESSION["fin_arri"] = true ;
+            }
+        }
+
+        function finComprobarAbajo($pos_i, $pos_j, $matriz, $color) {
+            if ( isset($matriz[$pos_i+1][$pos_j]) && $matriz[$pos_i+1][$pos_j] == $color) {
+                finComprobarAbajo($pos_i+1, $pos_j, $matriz, $color);
+            } else {
+                $_SESSION["fin_aba"] = true ;
+            }
+        }
+
+        function finComprobarDerecha($pos_i, $pos_j, $matriz, $color) {
+            if ( isset($matriz[$pos_i][$pos_j+1]) && $matriz[$pos_i][$pos_j+1] == $color) {
+                finComprobarDerecha($pos_i, $pos_j+1, $matriz, $color);
+            } else {
+                $_SESSION["fin_dere"] = true ;
+            }
+        }
+
+        function finComprobarIzquierda($pos_i, $pos_j, $matriz, $color) {
+            if ( isset($matriz[$pos_i][$pos_j-1]) && $matriz[$pos_i][$pos_j-1] == $color) {
+                finComprobarIzquierda($pos_i, $pos_j-1, $matriz, $color);
+            } else {
+                $_SESSION["fin_iz"] = true ;
+            }
+        }
         comprobarArriba($position_i,$position_j,$matriz,$color);
         comprobarAbajo($position_i,$position_j,$matriz,$color);
         comprobarDerecha($position_i,$position_j,$matriz,$color);
         comprobarIzquierda($position_i,$position_j,$matriz,$color);
-        $matriz[$position_i][$position_j] = 0;
+
+
+
+
+        if ( $_SESSION['actual'] == true ) {
+            $_SESSION['matriz'][$position_i][$position_j] = 0;
+        } else {
+            $_SESSION['actual'] == false;
+        }
 
         $matriz = $_SESSION['matriz'];
-        $_SESSION["pelotas"] = 0 ;
 
-        for ( $i = 0; $i < 10 ; $i++ ) {
-            for ($j = 0; $j < 10; $j++) {
-                echo $matriz[$i][$j]. ' ';
-            }
-            echo '<br>';
+        finComprobarAbajo($position_i,$position_j,$matriz,$color);
+        finComprobarArriba($position_i,$position_j,$matriz,$color);
+        finComprobarDerecha($position_i,$position_j,$matriz,$color);
+        finComprobarIzquierda($position_i,$position_j,$matriz,$color);
+
+        if (($_SESSION["fin_iz"] == true) && ($_SESSION["fin_dere"] == true ) && ($_SESSION["fin_aba"] == true) && ($_SESSION["fin_arri"] == true) ) {
+            $puntos = $_SESSION["puntos"];
+            $text = "Fin del juego, no mas movimientos posibles: su puntaje fue: $puntos";
+            echo "<script> alert('".$text."'); </script>";
         }
 
     }
 }
 
 ?>
-<script src="https://cdnjs.cloudflare.com/ajax/libs/jquery/3.6.0/jquery.min.js" integrity="sha512-894YE6QWD5I59HgZOGReFYm4dnWc1Qt5NtvYSaNcOP+u1T9qYdvdihz0PPSiiqn/+/3e7Jo4EaG7TubfWGUrMQ==" crossorigin="anonymous" referrerpolicy="no-referrer"></script>
 <div>
     <div>
         <h1>Bubble Breaker</h1>
-        <span><?= $_SESSION["puntos"] ?></span>
+        <span> Puntos: <?= $_SESSION["puntos"] ?></span>
     </div>
     <div>
         <form id="tablero" action="nuevo_juego.php" method="post">
@@ -117,8 +184,8 @@ if(!isset($_SESSION["matriz"])){
 <style>
     #tablero {
         background: gray;
-        /*display: table;*/
-        /*transform: rotate(-90deg);*/
+        display: table;
+        transform: rotate(-90deg);
     }
     .bubble_0, .bubble_1, .bubble_2, .bubble_3, .bubble_4, .bubble_5, .bubble_6 {
         width: 30px;
@@ -135,7 +202,7 @@ if(!isset($_SESSION["matriz"])){
     }
 
     .bubble_0 {
-        background: black;
+        display: none;
     }
     .bubble_3{
         background: green;
@@ -160,10 +227,3 @@ if(!isset($_SESSION["matriz"])){
         -moz-box-shadow: 0px 0px 14px -2px rgba(255,254,254,1) inset;
     }
 </style>
-
-<script>
-    $( "#tablero" ).bind( "click", function( e ) {
-        console.log(e)
-
-    });
-</script>
