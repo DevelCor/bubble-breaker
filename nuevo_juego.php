@@ -2,6 +2,9 @@
 //echo "<td><button type='submit' name='bubble'/> <img src='assets/".$mat[$i][$j].".png'> </button></td>";
 
 session_start();
+$_SESSION["puntos"] = 0;
+$_SESSION["contador"] = 0;
+$_SESSION["pelotas"] = 1;
 if(!isset($_SESSION["matriz"])){
     header("location: index.php");
 }else {
@@ -16,37 +19,42 @@ if(!isset($_SESSION["matriz"])){
 
         function comprobarArriba($pos_i, $pos_j, $matriz, $color) {
             if ( isset($matriz[$pos_i-1][$pos_j]) && $matriz[$pos_i-1][$pos_j] == $color) {
-                $matriz[$pos_i][$pos_j] = 0;
                 $matriz[$pos_i-1][$pos_j] = 0;
                 $_SESSION['matriz'] = $matriz;
+                $_SESSION["pelotas"]++;
                 comprobarArriba($pos_i-1, $pos_j, $matriz, $color);
+            } else {
+                $_SESSION["puntos"] += ($_SESSION["pelotas"] * ($_SESSION["pelotas"]-1));
             }
         }
 
         function comprobarAbajo($pos_i, $pos_j, $matriz, $color) {
             if ( isset($matriz[$pos_i+1][$pos_j]) && $matriz[$pos_i+1][$pos_j] == $color) {
-                $matriz[$pos_i][$pos_j] = 0;
                 $matriz[$pos_i+1][$pos_j] = 0;
                 $_SESSION['matriz'] = $matriz;
                 comprobarAbajo($pos_i+1, $pos_j, $matriz, $color);
+            } else {
+                $_SESSION["puntos"] += ($_SESSION["pelotas"] * ($_SESSION["pelotas"]-1));
             }
         }
 
         function comprobarDerecha($pos_i, $pos_j, $matriz, $color) {
             if ( isset($matriz[$pos_i][$pos_j+1]) && $matriz[$pos_i][$pos_j+1] == $color) {
-                $matriz[$pos_i][$pos_j] = 0;
                 $matriz[$pos_i][$pos_j+1] = 0;
                 $_SESSION['matriz'] = $matriz;
                 comprobarDerecha($pos_i, $pos_j+1, $matriz, $color);
+            } else {
+                $_SESSION["puntos"] += ($_SESSION["pelotas"] * ($_SESSION["pelotas"]-1));
             }
         }
 
         function comprobarIzquierda($pos_i, $pos_j, $matriz, $color) {
             if ( isset($matriz[$pos_i][$pos_j-1]) && $matriz[$pos_i][$pos_j-1] == $color) {
-                $matriz[$pos_i][$pos_j] = 0;
                 $matriz[$pos_i][$pos_j-1] = 0;
                 $_SESSION['matriz'] = $matriz;
                 comprobarIzquierda($pos_i, $pos_j-1, $matriz, $color);
+            } else {
+                $_SESSION["puntos"] += ($_SESSION["pelotas"] * ($_SESSION["pelotas"]-1));
             }
         }
 
@@ -54,7 +62,10 @@ if(!isset($_SESSION["matriz"])){
         comprobarAbajo($position_i,$position_j,$matriz,$color);
         comprobarDerecha($position_i,$position_j,$matriz,$color);
         comprobarIzquierda($position_i,$position_j,$matriz,$color);
+        $matriz[$position_i][$position_j] = 0;
+
         $matriz = $_SESSION['matriz'];
+        $_SESSION["pelotas"] = 0 ;
 
         for ( $i = 0; $i < 10 ; $i++ ) {
             for ($j = 0; $j < 10; $j++) {
@@ -71,6 +82,7 @@ if(!isset($_SESSION["matriz"])){
 <div>
     <div>
         <h1>Bubble Breaker</h1>
+        <span><?= $_SESSION["puntos"] ?></span>
     </div>
     <div>
         <form id="tablero" action="nuevo_juego.php" method="post">
@@ -105,6 +117,8 @@ if(!isset($_SESSION["matriz"])){
 <style>
     #tablero {
         background: gray;
+        /*display: table;*/
+        /*transform: rotate(-90deg);*/
     }
     .bubble_0, .bubble_1, .bubble_2, .bubble_3, .bubble_4, .bubble_5, .bubble_6 {
         width: 30px;
